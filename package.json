@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "nodemon -e ts -w ./src/**/*.ts -x \"npx tsc --watch\"",
-    "dev": "nodemon ./dist/server.js"
+    "dev": "nodemon ./dist/server.js",
+    "watch:dev": "npx tsc --watch",
+    "watch": "nodemon -e ts -w ./src/**/*.ts -x npm run watch:dev"
   },
   "keywords": [],
   "author": "",

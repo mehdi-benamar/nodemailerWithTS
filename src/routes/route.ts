@@ -3,7 +3,7 @@ import crypto from "crypto"
 import mail from "../utils/nodemail"
 const router:Router = express.Router()
 
-type Voitures = Voiture<Object>[]
+type Voitures = Voiture<{marque: string, couleur: string}>[]
 
 interface Voiture<X> {
     id: string,
@@ -24,7 +24,7 @@ router.get("/test", (req: Request, res: Response) => {
 
 
 router.post("/test", (req: Request, res: Response) => {
-  const voiture: Voiture<Object> = {
+  const voiture: Voiture<{marque: string, couleur: string}> = {
     id: crypto.randomUUID(),
     ...req.body
   }
