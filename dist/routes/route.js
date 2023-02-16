@@ -7,26 +7,44 @@ const express_1 = __importDefault(require("express"));
 const crypto_1 = __importDefault(require("crypto"));
 const nodemail_1 = __importDefault(require("../utils/nodemail"));
 const router = express_1.default.Router();
-let datas = [];
+let datas = require("../../db/datas.json");
+const listToken = [];
 router.get("/test/:id", (req, res) => {
-    const { id } = req.params;
-    const result = datas.find(voit => voit.id === id);
-    return res.json(result);
 });
 router.get("/test", (req, res) => {
-    return res.json(datas);
+    res.json(listToken);
 });
-router.post("/test", (req, res) => {
-    const voiture = Object.assign({ id: crypto_1.default.randomUUID() }, req.body);
-    const message = `
-  <h1 style='color: white'>Vous venez d'ajouter une voiture à votre liste avec l'identifiant suivant: <strong>"${voiture.id}"</strong></h1>
-    <ul>
-      <li style='color: white'>Marque de la voiture: ${req.body.marque}</li>
-      <li style='color: white'>Couleur de la voiture: ${req.body.couleur}</li>
-    </ul>
-  `;
-    datas.push(voiture);
-    (0, nodemail_1.default)(message, "mbenamar@test.fr");
-    return res.json(voiture);
+router.post("/reset", (req, res) => {
+    const { email } = req.body;
+    const user = datas.find(u => u.email === email);
+    if (!user) {
+        return res.status(400).json({ message: "ce user n'existe pas !" });
+    }
+    const token = crypto_1.default.randomBytes(32).toString("hex");
+    const resetLink = `${req.protocol}://${req.get("host")}/reset?id=${user.id}&token=${token}`;
+    listToken.push({
+        userId: user.id,
+        token
+    });
+    (0, nodemail_1.default)(`<a href="${resetLink}">${resetLink}</a>`, user.email);
+    res.status(200).json(listToken);
+});
+router.put("/reset", (req, res) => {
+    const { id, token } = req.query;
+    if (!id && !token)
+        return res.json({ message: "paramètres manquant pour réinitialiser le mdp" });
+    const userToken = listToken.find(t => t.userId.toString() === id);
+    if (userToken && (userToken.token === token || userToken.userId.toString() === id)) {
+        const user = datas.find(u => u.id === userToken.userId);
+        if (user) {
+            if (!req.body.password || req.body.password === "")
+                return res.json({ message: "mot de passe obligatoire" });
+            user.password = req.body.password;
+            res.json({ message: "mot de passe à jour" });
+        }
+    }
+    else {
+        res.json({ message: "id ou le token n'est pas bon !" });
+    }
 });
 exports.default = router;
