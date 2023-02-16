@@ -3,7 +3,8 @@ import crypto from "crypto"
 import mail from "../utils/nodemail"
 const router:Router = express.Router()
 
-type Voitures = Voiture<{marque: string, couleur: string}>[]
+type Voitures = Voiture<Object>[]
+type HTMLMessage = string
 
 interface Voiture<X> {
     id: string,
@@ -29,7 +30,7 @@ router.post("/test", (req: Request, res: Response) => {
     ...req.body
   }
 
-  const message = `
+  const message: HTMLMessage = `
   <h1 style='color: white'>Vous venez d'ajouter une voiture à votre liste avec l'identifiant suivant: <strong>"${voiture.id}"</strong></h1>
     <ul>
       <li style='color: white'>Marque de la voiture: ${req.body.marque}</li>
